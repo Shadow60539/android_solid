@@ -4,8 +4,10 @@ import com.example.solid.data.dto.UserDto
 import com.example.solid.data.remote.AuthDataSource
 import com.example.solid.domain.model.User
 import com.example.solid.domain.repository.AuthRepository
+import javax.inject.Inject
 
-class AuthRepositoryImpl(private val dataSource: AuthDataSource) : AuthRepository {
+class AuthRepositoryImpl @Inject constructor(private val dataSource: AuthDataSource) :
+    AuthRepository {
 
     override suspend fun loginIn(): User {
         val json = dataSource.loginIn()

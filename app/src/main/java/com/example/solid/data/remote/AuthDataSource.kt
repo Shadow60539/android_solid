@@ -8,7 +8,7 @@ interface AuthDataSource {
     suspend fun loginOut()
 }
 
-class CustomAuthDataSource : AuthDataSource {
+class AuthDataSourceImpl : AuthDataSource {
     override suspend fun loginIn(): Map<String, Any> {
         try {
             return mapOf<String, Any>("_id" to 1, "name" to "James Bond")
