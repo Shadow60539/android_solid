@@ -1,7 +1,16 @@
 package com.example.solid.presentation
 
 import android.app.Application
-import dagger.hilt.android.HiltAndroidApp
+import com.example.solid.core.di.appModule
+//import dagger.hilt.android.HiltAndroidApp
+import org.koin.core.context.startKoin
 
-@HiltAndroidApp()
-class MyApp : Application()
+//@HiltAndroidApp()
+class MyApp : Application() {
+    override fun onCreate() {
+        super.onCreate()
+        startKoin {
+            modules(appModule)
+        }
+    }
+}

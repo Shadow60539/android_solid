@@ -5,17 +5,16 @@ import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import com.example.solid.R
 import com.example.solid.domain.usecase.LoginInUseCase
-import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import javax.inject.Inject
+import org.koin.android.ext.android.get
 
-@AndroidEntryPoint
+//@AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
 
-    @Inject
-    lateinit var loginInUseCase: LoginInUseCase
+    //    @Inject
+    var loginInUseCase: LoginInUseCase = get<LoginInUseCase>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
