@@ -4,16 +4,16 @@ import com.example.solid.data.exception.AuthException
 import kotlinx.coroutines.delay
 
 interface AuthDataSource {
-    suspend fun loginIn(): Map<String, Any>
+    suspend fun loginIn(): String
     suspend fun createAccount()
     suspend fun loginOut()
 }
 
 class AuthDataSourceImpl : AuthDataSource {
-    override suspend fun loginIn(): Map<String, Any> {
+    override suspend fun loginIn(): String {
         delay(1000L)
         try {
-            return mapOf<String, Any>("_id" to 1, "name" to "James Bond")
+            return "{\"_id\": 007,\"name\": \"James Bond\"}"
         } catch (e: AuthException) {
             when (e) {
                 is AuthException.InvalidUsernameOrPassword -> TODO()
