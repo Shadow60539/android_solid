@@ -1,6 +1,7 @@
 package com.example.solid.data.remote
 
 import com.example.solid.data.exception.AuthException
+import kotlinx.coroutines.delay
 
 interface AuthDataSource {
     suspend fun loginIn(): Map<String, Any>
@@ -10,6 +11,7 @@ interface AuthDataSource {
 
 class AuthDataSourceImpl : AuthDataSource {
     override suspend fun loginIn(): Map<String, Any> {
+        delay(1000L)
         try {
             return mapOf<String, Any>("_id" to 1, "name" to "James Bond")
         } catch (e: AuthException) {
