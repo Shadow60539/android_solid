@@ -52,6 +52,7 @@ class MainActivity : AppCompatActivity() {
                             Toast.makeText(
                                 this@MainActivity, when (postFailure) {
                                     PostFailure.ServerFailure -> "Server Failure"
+                                    PostFailure.CacheFailure -> "No Cache found"
                                     else -> null
                                 }, Toast.LENGTH_SHORT
                             ).show()
@@ -66,6 +67,8 @@ class MainActivity : AppCompatActivity() {
                                 this@MainActivity, when (postFailure) {
                                     PostFailure.CreatePostFailure -> "Unable to create Post"
                                     PostFailure.ServerFailure -> "Server Failure"
+                                    PostFailure.ClientFailure -> "No Internet"
+                                    else -> null
                                 }, Toast.LENGTH_SHORT
                             ).show()
                         },

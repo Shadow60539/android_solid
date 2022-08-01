@@ -1,8 +1,12 @@
 package com.example.solid.data.dto
 
+import androidx.room.Entity
+import androidx.room.PrimaryKey
 import com.example.solid.domain.model.Post
 
+@Entity(tableName = "post")
 data class PostDto(
+    @PrimaryKey(autoGenerate = false)
     val id: Int,
     val userId: Int,
     val title: String,
