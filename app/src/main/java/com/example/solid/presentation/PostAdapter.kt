@@ -31,4 +31,10 @@ class PostAdapter(private val posts: MutableList<Post>) : RecyclerView.Adapter<P
         posts.add(0, post)
         notifyDataSetChanged()
     }
+
+    fun addPosts(newPosts: List<Post>) {
+        posts.clear()
+        posts.addAll(newPosts)
+        notifyDataSetChanged()
+    }
 }

@@ -1,5 +1,6 @@
 package com.example.solid.data.remote
 
+import android.util.Log
 import com.example.solid.data.dto.PostDto
 import com.example.solid.data.exception.PostException
 import javax.inject.Inject
@@ -14,6 +15,7 @@ class PostDataSourceImpl @Inject constructor(private val api: PostApi) : PostDat
         val response = api.getPosts()
 
         if (response.isSuccessful) {
+            Log.d(this.javaClass.simpleName, "getPosts")
             return response.body()!!
         }
 
