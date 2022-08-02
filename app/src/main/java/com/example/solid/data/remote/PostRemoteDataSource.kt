@@ -16,7 +16,6 @@ class PostRemoteDataSourceImpl @Inject constructor(private val api: PostApi) :
         try {
             val response = api.getPosts()
             if (response.isSuccessful) {
-                Log.d(this.javaClass.simpleName, "getPosts")
                 return response.body()!!
             }
         } catch (e: Exception) {

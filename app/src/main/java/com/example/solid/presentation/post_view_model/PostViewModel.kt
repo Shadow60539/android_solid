@@ -1,17 +1,14 @@
 package com.example.solid.presentation.post_view_model
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import arrow.core.Either
+import com.example.solid.domain.failure.PostFailure
 import com.example.solid.domain.model.Post
 import com.example.solid.domain.usecase.CreatePostUseCase
 import com.example.solid.domain.usecase.GetPostsUseCase
+import com.example.solid.presentation.util.InputValidator
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -19,51 +16,83 @@ import javax.inject.Inject
 class PostViewModel @Inject constructor(
     val getPostsUseCase: GetPostsUseCase,
     val createPostUseCase: CreatePostUseCase,
+    val validator: InputValidator
 ) : ViewModel() {
 
-    var state by mutableStateOf<PostState>(PostState())
+    var getPostState = MutableStateFlow<PostState<MutableList<Post>>>(PostState.Empty())
         private set
 
-    private val _listener = Channel<PostEventListener>()
-    val listener = _listener.receiveAsFlow()
+    var addPostState = MutableStateFlow<PostState<Post>>(PostState.Empty())
+        private set
+
+    init {
+        getPosts()
+    }
 
     fun add(event: PostEvent) = when (event) {
         is PostEvent.GetPosts -> getPosts()
-        is PostEvent.AddPost -> addPost(event.post)
+        is PostEvent.AddPost -> addPost(event.title, event.body)
+        is PostEvent.ConfigurationChange -> onConfigurationChange()
     }
 
     private fun getPosts() {
 
-        state = state.copy(isLoading = true)
+        getPostState.value = PostState.Loading()
 
         viewModelScope.launch {
             getPostsUseCase()
                 .fold(ifLeft = { postFailure ->
-                    _listener.send(PostEventListener.OnGetPosts(Either.Left(postFailure)))
+                    getPostState.value = PostState.Error(
+                        when (postFailure) {
+                            PostFailure.CacheFailure -> "No Cache Found"
+                            PostFailure.ClientFailure -> "Client Failure"
+                            PostFailure.ServerFailure -> "Server Failure"
+                            else -> "null"
+                        },
+                    )
                 }, ifRight = { newPosts ->
-                    state = state.copy(posts = newPosts.toMutableList())
-                    _listener.send(PostEventListener.OnGetPosts(Either.Right(state.posts)))
+                    getPostState.value = PostState.Success(newPosts.toMutableList())
                 })
-
-            state = state.copy(isLoading = false)
         }
     }
 
-    private fun addPost(post: Post) {
+    private fun addPost(title: String, body: String) {
 
-        state = state.copy(isLoading = true)
+        addPostState.value = PostState.Loading()
+
+        if (!validator.isValidateTitle(title)) {
+            addPostState.value = PostState.Error("Invalid Title")
+            return
+        }
+
+        if (!validator.isValidateBody(body)) {
+            addPostState.value = PostState.Error("Invalid Body")
+            return
+        }
+
+        val post = Post(id = 1, userId = 1, title = title.trim(), body = body.trim())
 
         viewModelScope.launch {
             createPostUseCase(post).fold(
                 ifLeft = { postFailure ->
-                    _listener.send(PostEventListener.OnAddPost(Either.Left(postFailure)))
+                    addPostState.value = PostState.Error(
+                        when (postFailure) {
+                            PostFailure.CacheFailure -> "No Cache Found"
+                            PostFailure.ClientFailure -> "Client Failure"
+                            PostFailure.ServerFailure -> "Server Failure"
+                            else -> "null"
+                        },
+                    )
                 },
                 ifRight = { newPost ->
-                    state.posts.add(0, newPost)
-                    _listener.send(PostEventListener.OnAddPost(Either.Right(newPost)))
+                    getPostState.value.data?.add(0, newPost)
+                    addPostState.value = PostState.Success(newPost)
                 })
 
-            state = state.copy(isLoading = false)
         }
+    }
+
+    private fun onConfigurationChange() {
+        addPostState.value = PostState.Empty()
     }
 }

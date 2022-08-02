@@ -13,6 +13,7 @@ import com.example.solid.data.remote.PostRemoteDataSource
 import com.example.solid.data.remote.PostRemoteDataSourceImpl
 import com.example.solid.data.repository.PostRepositoryImpl
 import com.example.solid.domain.repository.PostRepository
+import com.example.solid.presentation.util.InputValidator
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import dagger.Module
@@ -86,5 +87,11 @@ object AppModule {
     @Singleton
     fun providesInternetConnection(@ApplicationContext app: Context): InternetConnection {
         return InternetConnectionImpl(app)
+    }
+
+    @Provides
+    @Singleton
+    fun providesInputValidator(): InputValidator {
+        return InputValidator
     }
 }

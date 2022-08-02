@@ -4,6 +4,7 @@
     <option name="filePathToZoomLevelMap">
       <map>
         <entry key="..\:/Users/sduddela/AndroidStudioProjects/SOLID/app/src/main/res/layout/activity_main.xml" value="0.2" />
+        <entry key="..\:/Users/sduddela/AndroidStudioProjects/SOLID/app/src/main/res/layout/fragment_add_post_bottom_sheet.xml" value="0.25" />
         <entry key="..\:/Users/sduddela/AndroidStudioProjects/SOLID/app/src/main/res/layout/post_item.xml" value="0.25" />
       </map>
     </option>

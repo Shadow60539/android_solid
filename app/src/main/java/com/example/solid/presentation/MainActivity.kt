@@ -1,5 +1,6 @@
 package com.example.solid.presentation
 
+import android.content.res.Configuration
 import android.os.Bundle
 import android.view.View
 import android.widget.ProgressBar
@@ -10,12 +11,11 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.solid.R
-import com.example.solid.domain.failure.PostFailure
-import com.example.solid.domain.model.Post
 import com.example.solid.presentation.post_view_model.PostEvent
-import com.example.solid.presentation.post_view_model.PostEventListener
+import com.example.solid.presentation.post_view_model.PostState
 import com.example.solid.presentation.post_view_model.PostViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
@@ -24,73 +24,84 @@ class MainActivity : AppCompatActivity() {
     private lateinit var rvPost: RecyclerView
     private lateinit var postAdapter: PostAdapter
     private lateinit var progressBar: ProgressBar
+    private lateinit var dialog: AddPostBottomSheetFragment
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         initializeUi()
-        addViewModelEventListener()
-        viewModel.add(PostEvent.GetPosts)
+        addViewModelObserver()
     }
 
     private fun initializeUi() {
         rvPost = findViewById(R.id.rvPosts)
         progressBar = findViewById(R.id.progressBar)
+        dialog = AddPostBottomSheetFragment()
 
         postAdapter = PostAdapter(mutableListOf())
         rvPost.adapter = postAdapter
         rvPost.layoutManager = LinearLayoutManager(this@MainActivity)
+        rvPost.visibility = View.INVISIBLE
     }
 
 
-    private fun addViewModelEventListener() {
-        lifecycleScope.launchWhenStarted {
-            viewModel.listener.collect {
-                when (it) {
-                    is PostEventListener.OnGetPosts -> it.failureOrSuccess.fold(
-                        ifLeft = { postFailure ->
-                            Toast.makeText(
-                                this@MainActivity, when (postFailure) {
-                                    PostFailure.ServerFailure -> "Server Failure"
-                                    PostFailure.CacheFailure -> "No Cache found"
-                                    else -> null
-                                }, Toast.LENGTH_SHORT
-                            ).show()
-                        },
-                        ifRight = {
-                            postAdapter.addPosts(viewModel.state.posts)
-                        },
-                    )
-                    is PostEventListener.OnAddPost -> it.failureOrSuccess.fold(
-                        ifLeft = { postFailure ->
-                            Toast.makeText(
-                                this@MainActivity, when (postFailure) {
-                                    PostFailure.CreatePostFailure -> "Unable to create Post"
-                                    PostFailure.ServerFailure -> "Server Failure"
-                                    PostFailure.ClientFailure -> "No Internet"
-                                    else -> null
-                                }, Toast.LENGTH_SHORT
-                            ).show()
-                        },
-                        ifRight = { post ->
-                            postAdapter.addPost(post)
-                        },
-                    )
+    private fun addViewModelObserver() {
+        lifecycleScope.launch {
+            viewModel.getPostState
+                .collect {
+                    when (it) {
+                        is PostState.Error -> Toast.makeText(
+                            this@MainActivity,
+                            it.message,
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        is PostState.Loading -> {
+                            progressBar.visibility = View.VISIBLE
+                        }
+                        is PostState.Success -> {
+                            postAdapter.addPost(it.data!!.toMutableList())
+                            rvPost.visibility = View.VISIBLE
+                            progressBar.visibility = View.GONE
+                            rvPost.smoothScrollToPosition(0)
+                        }
+                        else -> {}
+                    }
                 }
-                progressBar.visibility = View.GONE
+        }
+        lifecycleScope.launch {
+            viewModel.addPostState.collect {
+                when (it) {
+                    is PostState.Error -> {
+                        Toast.makeText(
+                            this@MainActivity,
+                            it.message,
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        progressBar.visibility = View.GONE
+                    }
+                    is PostState.Loading -> {
+                        progressBar.visibility = View.VISIBLE
+                    }
+                    is PostState.Success -> {
+                        postAdapter.addPost(it.data!!)
+                        rvPost.smoothScrollToPosition(0)
+                        progressBar.visibility = View.GONE
+                        dialog.closeDialog()
+                    }
+                    else -> {}
+                }
             }
         }
+
+    }
+
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        viewModel.add(PostEvent.ConfigurationChange)
     }
 
     fun addPost(view: View) {
-        progressBar.visibility = View.VISIBLE
-        val newPost =
-            Post(
-                id = 1,
-                userId = 1,
-                title = "New Post Title",
-                body = viewModel.state.posts.size.toString()
-            )
-        viewModel.add(PostEvent.AddPost(newPost))
+        dialog.show(supportFragmentManager, "AddPostBottomSheetDialog")
     }
+
 }

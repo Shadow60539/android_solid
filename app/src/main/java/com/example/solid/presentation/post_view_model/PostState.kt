@@ -1,8 +1,8 @@
 package com.example.solid.presentation.post_view_model
 
-import com.example.solid.domain.model.Post
-
-data class PostState(
-    val isLoading: Boolean = false,
-    val posts: MutableList<Post> = mutableListOf(),
-)
+sealed class PostState<T>(val data: T? = null, val message: String? = null) {
+    class Empty<T> : PostState<T>(data = null, message = null)
+    class Loading<T> : PostState<T>(message = null)
+    class Success<T>(data: T? = null) : PostState<T>(data, message = null)
+    class Error<T>(msg: String) : PostState<T>(message = msg)
+}

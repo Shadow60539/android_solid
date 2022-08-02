@@ -8,7 +8,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.solid.R
 import com.example.solid.domain.model.Post
 
-class PostAdapter(private val posts: MutableList<Post>) : RecyclerView.Adapter<PostAdapter.ViewHolder>() {
+class PostAdapter(private val posts: MutableList<Post>) :
+    RecyclerView.Adapter<PostAdapter.ViewHolder>() {
     inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val tvTitle: TextView = itemView.findViewById(R.id.tvTitle)
         val tvBody: TextView = itemView.findViewById(R.id.tvBody)
@@ -27,14 +28,14 @@ class PostAdapter(private val posts: MutableList<Post>) : RecyclerView.Adapter<P
 
     override fun getItemCount() = posts.size
 
-    fun addPost(post: Post) {
-        posts.add(0, post)
+    fun addPost(newPosts: List<Post>) {
+        posts.clear()
+        posts.addAll(newPosts)
         notifyDataSetChanged()
     }
 
-    fun addPosts(newPosts: List<Post>) {
-        posts.clear()
-        posts.addAll(newPosts)
+    fun addPost(newPost: Post) {
+        posts.add(0, newPost)
         notifyDataSetChanged()
     }
 }
