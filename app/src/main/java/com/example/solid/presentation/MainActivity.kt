@@ -10,6 +10,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.example.solid.R
 import com.example.solid.presentation.post_view_model.PostEvent
 import com.example.solid.presentation.post_view_model.PostState
@@ -25,6 +26,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var postAdapter: PostAdapter
     private lateinit var progressBar: ProgressBar
     private lateinit var dialog: AddPostBottomSheetFragment
+    private lateinit var swipeRefreshLayout: SwipeRefreshLayout
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,6 +44,12 @@ class MainActivity : AppCompatActivity() {
         rvPost.adapter = postAdapter
         rvPost.layoutManager = LinearLayoutManager(this@MainActivity)
         rvPost.visibility = View.INVISIBLE
+
+        swipeRefreshLayout = findViewById<SwipeRefreshLayout>(R.id.pullToRefresh).apply {
+            setOnRefreshListener {
+                viewModel.add(PostEvent.GetPosts)
+            }
+        }
     }
 
 
@@ -59,6 +67,7 @@ class MainActivity : AppCompatActivity() {
                             progressBar.visibility = View.VISIBLE
                         }
                         is PostState.Success -> {
+                            swipeRefreshLayout.isRefreshing = false
                             postAdapter.addPost(it.data!!.toMutableList())
                             rvPost.visibility = View.VISIBLE
                             progressBar.visibility = View.GONE
